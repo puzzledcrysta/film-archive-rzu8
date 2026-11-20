@@ -91,3 +91,10 @@ td,th { height:var(--row); padding:6px 12px; vertical-align:top; overflow-wrap:a
 .readout span { height:auto; width:auto; padding:0; background:none; border:0; border-radius:0; aspect-ratio:auto; color:var(--mute); font:13px var(--mono); text-align:right; }
 .readout { justify-content:flex-end; height:auto; min-height:25px; transform:none; border:0; background:none; }
 .readout span:empty { display:none; }
+
+.exports { display: flex; gap: 8px; }
+.trail { border-block-start: 2px dashed #a97996; margin-block-start: 10px; padding-block-start: 8px; }
+.trail__step { display: grid; gap: 2px; border: 1px dashed #a97996; border-radius: 8px; padding: 5px 10px; margin-block-end: 6px; }
+.trail__step small { color: var(--mute); }
+.trail__step output { text-align: start; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--mute); }

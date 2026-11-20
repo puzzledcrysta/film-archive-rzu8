@@ -8,7 +8,8 @@
   <nav aria-label="模块">{% for slug, label in tabs.items() %}<a href="#{{ slug }}" data-module="{{ slug }}"{% if slug == 'domain' %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
   <small>{{ role }}</small></aside>
   <div class="work"><header class="topbar"><span>{{ slug }} / {{ version }}</span>
-  <a class="btn" id="export" hidden>导出证据</a></header>
+  <span class="exports"><a class="btn" id="export" hidden>导出证据</a>
+  <a class="btn" id="export-rolls" hidden>导出并账 CSV</a></span></header>
   <main class="content"><section class="mast"><div><h1>{{ title }}</h1><p>{{ key }} · {{ unit }}</p></div>
     <div class="instrument readout"><span id="created"></span></div></section>
 <div class="kpis" id="kpis" aria-label="批次指标">

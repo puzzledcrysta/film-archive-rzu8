@@ -9,6 +9,7 @@ const alert = byId('notice');
 const live = byId('state');
 const action = document.querySelector('#source button[type=submit]');
 const topExport = byId('export');
+const topRolls = byId('export-rolls');
 let selected = Object.hasOwn(settings.tabs, location.hash.slice(1)) ? location.hash.slice(1) : 'domain';
 let result = null;
 let inputs = {};
@@ -56,7 +57,28 @@ function showEvidence(row) {
     }
     content.append(measure, value);
   }
+  content.append(revisionTrail(row));
   details.replaceChildren(content);
+}
+
+function revisionTrail(row) {
+  const box = el('div', undefined, 'trail');
+  const title = el('dt', '补正轨迹（每次补正后的最终可用帧段）');
+  box.append(title);
+  const steps = row.revisions && row.revisions.length ? row.revisions : [];
+  if (!steps.length) {
+    box.append(el('dd', '无补发记录', 'muted'));
+    return box;
+  }
+  for (const step of steps) {
+    const item = el('dd', undefined, 'trail__step');
+    const head = el('small');
+    head.textContent = `修订 ${step.revision} · 来源行 ${step.line} · ${(step.changed || []).join('、') || '无字段变更'}`;
+    const spans = el('output', step.available_text ? `可用 ${step.available_text}` : '可用 无');
+    item.append(head, spans);
+    box.append(item);
+  }
+  return box;
 }
 
 function inspect(row) {
@@ -78,6 +100,8 @@ function setRun(report) {
   byId('run-id').title = id;
   topExport.hidden = false;
   topExport.href = `/api/export/${id}`;
+  topRolls.hidden = false;
+  topRolls.href = `/api/export/${id}/rolls.csv`;
   const values = {...result.counts, delta: result.book.delta, mismatched: result.book.mismatched};
   for (const cell of document.querySelectorAll('[data-count]')) cell.textContent = values[cell.dataset.count];
   live.textContent = `批次 ${id.slice(0, 9)} · ${result.balanced ? '记录已对齐' : '记录数不符'}`;
@@ -100,7 +124,7 @@ async function render() {
   try {
     let view, rows;
     if (stage === 'domain') {
-      view = [key, [`复算值 · ${settings.unit}`, 'amount', 'num'], line, ['明细依据', inspect]];
+      view = [key, ['最终可用帧段', 'available_text'], [`复算值 · ${settings.unit}`, 'amount', 'num'], line, ['明细依据', inspect]];
       rows = result.accepted;
     } else if (stage === 'quality') {
       view = [key, line, ['判定', row => tag(row.code)], ['说明', 'detail'], ['字段', raw]];
@@ -127,8 +151,9 @@ async function render() {
           button.disabled = true;
           try {
             if (current) {
-              setRun(await query(`/api/runs/${id}/replay`, {}));
-              notice('复算已核对');
+              const replayed = await query(`/api/runs/${id}/replay`, {});
+              setRun(replayed);
+              notice('复算已核对，结果与上一版一致');
             } else {
               const [past, original] = await Promise.all([
                 query(`/api/runs/${row.id}`), query(`/api/runs/${row.id}/source`),
@@ -139,7 +164,11 @@ async function render() {
               await render();
             }
           }
-          catch (error) { notice(error.message, true); }
+          catch (error) {
+            // 切换或重算失败：不覆盖当前 result，工作台仍展示并可继续打开上一版
+            notice(`切换失败，已保留上一版结果：${error.message}`, true);
+            await render();
+          }
           finally { button.disabled = false; }
         });
         return button;

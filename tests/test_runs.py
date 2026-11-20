@@ -68,3 +68,17 @@ def test_history_reopens_exact_inputs(client, source, book):
     restored = client.get(f'/api/runs/{run_id}/source').json()
     assert b64decode(restored['data_base64']) == source
     assert b64decode(restored['book_base64']) == book
+
+
+def test_failed_switch_keeps_previous_version(client):
+    # 先落一版有效结果，再用坏输入发起新运行：旧版结果必须原样保留且可继续打开
+    good = client.post('/api/runs', json={}).json()
+    run_id = good['manifest']['run_id']
+    failed = client.post('/api/runs', json={'data': 'bad\na'})
+    assert failed.status_code == 422
+    assert client.get(f'/api/runs/{run_id}').json() == good
+    assert [item['id'] for item in client.get('/api/runs').json()] == [run_id]
+    # 对旧版重跑同样失败时（模拟重算异常），存储结果不被覆盖
+    bad_replay = client.post('/api/runs/not-there/replay', json={})
+    assert bad_replay.status_code == 404
+    assert client.get(f'/api/runs/{run_id}').json() == good

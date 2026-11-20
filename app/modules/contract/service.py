@@ -2,7 +2,7 @@ from app.errors import DataError
 from app.evidence import finding
 from app.settings import KEY, FIELDS
 from app.modules.domain.values import whole, instant
-from .schema import mapping, REQUIRED, MISSING
+from .schema import mapping, REQUIRED, HARD_REQUIRED, MISSING
 
 
 def normalize(source):
@@ -12,8 +12,10 @@ def normalize(source):
         values = dict(zip(names,record['values']))
         key = values[KEY]
         try:
-            if any(values[k].casefold() in MISSING for k in REQUIRED):
-                raise DataError('REQUIRED','主键、修订号、时间和业务字段均须填写')
+            if any(not values[k] or values[k].casefold() in MISSING for k in HARD_REQUIRED):
+                raise DataError('REQUIRED','主键、修订号和提交时间均须填写')
+            if any(values[k].casefold() in MISSING for k in FIELDS):
+                raise DataError('REQUIRED','业务字段的显式空值哨兵无效，空白表示沿用旧版，“无”表示清空')
             rev = whole(values['修订号'],1,10**9)
             changed = instant(values['提交时间']).isoformat()
         except DataError as error:
