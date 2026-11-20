@@ -1,0 +1,16 @@
+/* 扫描帧段 · 判废帧段 */
+:root {
+  color-scheme: dark;
+  --bg: #1d1422; --rail: #362332; --accent: #ff9ed3; --ink: #f5e6f0;
+  --panel: color-mix(in srgb, var(--bg) 91%, white);
+  --line: color-mix(in srgb, var(--ink) 24%, var(--bg));
+  --mute: color-mix(in srgb, var(--ink) 78%, var(--bg));
+  --th: color-mix(in srgb, var(--panel) 84%, var(--accent));
+  --rail-ink: #f2f0e9;
+  --primary: #151919;
+  --bad: #ffb9bd;
+  --ui: Avenir Next, sans-serif; --mono: ui-monospace, Menlo, monospace;
+  --pad: 15px; --row: 34px; --gap: 16px;
+  --figure: 28px; --title: 42px; --graph: 60px;
+  --scroll: 369px;
+}
